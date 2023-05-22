@@ -1,7 +1,10 @@
+#include <string>
 #include "pch.h"
 #include "ImageProcessingFunc.h"
+#include "opencv2/opencv.hpp"
 
-TEST(TestDllFunction, TestUsingCommonTypeOutput) {
+TEST(TestDllFunction, TestUsingCommonTypeOutput) 
+{
 	// arrange
 	int arg1 = 1;
 	double arg2 = 2.0;
@@ -17,4 +20,23 @@ TEST(TestDllFunction, TestUsingCommonTypeOutput) {
 	EXPECT_EQ(output1, arg1 + 1);
 	EXPECT_DOUBLE_EQ(output2, arg2 + 2.0);
 	EXPECT_EQ(output3, arg3 + 3);
+}
+
+TEST(TestDllFunction, TestUsingStructOutput)
+{
+	// arrange
+	std::string file = "../Images/lena_gray.bmp";
+	std::cout << file << std::endl;
+	cv::Mat img = cv::imread(file, cv::IMREAD_GRAYSCALE);
+	std::cout << "image rows = " << img.rows << ", cols = " << img.cols << std::endl;
+
+	// act
+	Image* input = ConvertCvMat2Image(img);
+	Image* output = new Image();
+	UsingStruct(input, output, 1, 2.0);
+
+	// assert
+	EXPECT_TRUE(output->Width == img.cols);
+	EXPECT_TRUE(output->Height == img.rows);
+	ReleaseImage(output);
 }
