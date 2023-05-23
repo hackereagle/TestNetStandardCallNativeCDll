@@ -18,7 +18,7 @@ class TestCallNativeCppClass
     { 
     }
 
-    [DllImport("../../NativeCppDll.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("../../NativeCppDll.dll", EntryPoint = "UsingCommonType", CallingConvention = CallingConvention.Cdecl)]
     private static extern void UsingCommonType(int arg1, double arg2, float arg3, out int output1, out double output2, out float output3);
 
     public void TestUsingCommonTypeOutput()
@@ -45,7 +45,9 @@ class TestCallNativeCppClass
     {
         public int Width;
         public int Height;
-        public byte[] Date;
+        public IntPtr Data;
+        //[MarshalAs(UnmanagedType.HString)]
+        //public byte[] Date;
     }
 
     ImageStruct ConvertBitmap2ImageStruct(Bitmap bm)
@@ -53,7 +55,8 @@ class TestCallNativeCppClass
         ImageStruct ret = new ImageStruct();
         ret.Width = bm.Width;
         ret.Height = bm.Height;
-        ret.Date = new byte[bm.Width * bm.Height];
+        //ret.Date = new byte[bm.Width * bm.Height];
+        byte[] Date = new byte[bm.Width * bm.Height];
 
         BitmapData bd = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed);
         int stride = bd.Stride;
@@ -65,7 +68,8 @@ class TestCallNativeCppClass
             int colIdx = 0;
             for (int i = 0; i < size; i++)
             {
-                ret.Date[i] = *p;
+                //ret.Date[i] = *p;
+                Date[i] = *p;
                 p = p + 1;
                 colIdx = colIdx + 1;
                 if (colIdx == bm.Width - 1)
@@ -77,10 +81,14 @@ class TestCallNativeCppClass
         }
         bm.UnlockBits( bd );
 
+        GCHandle pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
+        ret.Data = pinnedArray.AddrOfPinnedObject();
+        pinnedArray.Free();
+
         return ret;
     }
 
-    [DllImport("../../NativeCppDll.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("../../NativeCppDll.dll", EntryPoint = "UsingStruct", CallingConvention = CallingConvention.Cdecl)]
     private static extern void UsingStruct(ImageStruct inputImage, ref ImageStruct outputImage, int arg1, double arg2);
 
     public void TestPassSeftDefineStruct()
@@ -92,5 +100,16 @@ class TestCallNativeCppClass
         ImageStruct output = new ImageStruct();
 
         UsingStruct(input, ref output, 1, 2.0);
+
+        int firstDataVal = 0;
+        unsafe 
+        { 
+            firstDataVal = *(byte*)output.Data.ToPointer();
+        }
+
+        Debug.Assert(output.Width == 512);
+        Debug.Assert(output.Height == 512);
+        Debug.Assert(firstDataVal == 134);
+        Console.WriteLine($"After UsingStruct, output image: width = {output.Width}, height = {output.Height}, Data[0] = {firstDataVal}");
     }
 }

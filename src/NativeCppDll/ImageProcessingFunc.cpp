@@ -41,6 +41,7 @@ void UsingStruct(Image* inputImage, Image* outputImage, int arg1, double arg2)
 	std::cout << "finish blur" << std::endl;
 	
 	CopyMat2Image(blurImg, outputImage);
+	std::cout << "In dll, input image = {Width = " << outputImage->Width << ", Height = " << outputImage->Height << ", Data[0] = " << (int)*outputImage->Data << "\}" << std::endl;
 }
 
 void ReleaseImage(Image* inputImage)
