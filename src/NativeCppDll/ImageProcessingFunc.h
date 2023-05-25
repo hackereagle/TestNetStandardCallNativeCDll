@@ -5,7 +5,8 @@
 #include "opencv2/opencv.hpp"
 
 #ifdef DLL_EXPORT
-#define DLL_API extern "C" _declspec(dllexport) 
+// #define DLL_API extern "C" _declspec(dllexport) 
+#define DLL_API _declspec(dllexport) 
 #else
 #define DLL_API _declspec(dllimport) 
 #endif // DLL_EXPORT
@@ -24,6 +25,8 @@ extern "C"
 
 	DLL_API void __cdecl ReleaseImage(Image* inputImage);
 }
+
+DLL_API void __cdecl UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3);
 
 inline Image* ConvertCvMat2Image(cv::Mat mat)
 {

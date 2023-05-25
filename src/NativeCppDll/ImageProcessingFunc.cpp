@@ -1,16 +1,4 @@
 #include "ImageProcessingFunc.h"
-//#include "opencv2/opencv.hpp"
-
-//Image* ConvertCvMat2Image(cv::Mat mat)
-//{
-//	Image* ret = new Image();
-//	ret->Height = mat.rows;
-//	ret->Width = mat.cols;
-//	ret->Data = new unsigned char[ret->Height * ret->Width];
-//	memcpy(ret->Data, mat.data, ret->Height * ret->Width);
-//
-//	return ret;
-//}
 
 void UsingCommonType(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3)
 {
@@ -50,4 +38,13 @@ void ReleaseImage(Image* inputImage)
 	inputImage->Width = 0;
 	delete [] inputImage->Data;
 	inputImage->Data = nullptr;
+}
+
+void UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3)
+{
+	std::cout << "In dll not extern C function, receive arguments: arg1 = " << arg1 << ", arg2 = " << arg2 << ", arg3 = " << arg3 << std::endl;
+
+	*output1 = arg1 + 4;
+	*output2 = arg2 + 5.0;
+	*output3 = arg3 + 6;
 }

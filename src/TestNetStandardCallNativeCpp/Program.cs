@@ -9,6 +9,7 @@ Console.WriteLine("Beging testing .NET Standard using native c++ dll.");
 var test = new TestCallNativeCppClass();
 test.TestUsingCommonTypeOutput();
 test.TestPassSeftDefineStruct();
+test.TestUsingCommonTypeNotUsingExternCOutput();
 Console.ReadLine();
 
 
@@ -24,6 +25,7 @@ class TestCallNativeCppClass
     public void TestUsingCommonTypeOutput()
     {
         Console.WriteLine("***** Test ussing common type and receive output!");
+        // arrange
         int arg1 = 1;
         double arg2 = 2.0;
         float arg3 = 3;
@@ -31,8 +33,10 @@ class TestCallNativeCppClass
         double output2 = 0.0;
         float output3 = 0;
 
+        // act
         UsingCommonType(arg1, arg2, arg3, out output1, out output2, out output3);
 
+        // assert
         Debug.Assert(output1 == 2);
         Debug.Assert(output2 == 4.0);
         Debug.Assert(output3 == 6);
@@ -46,8 +50,6 @@ class TestCallNativeCppClass
         public int Width;
         public int Height;
         public IntPtr Data;
-        //[MarshalAs(UnmanagedType.HString)]
-        //public byte[] Date;
     }
 
     ImageStruct ConvertBitmap2ImageStruct(Bitmap bm)
@@ -55,7 +57,6 @@ class TestCallNativeCppClass
         ImageStruct ret = new ImageStruct();
         ret.Width = bm.Width;
         ret.Height = bm.Height;
-        //ret.Date = new byte[bm.Width * bm.Height];
         byte[] Date = new byte[bm.Width * bm.Height];
 
         BitmapData bd = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed);
@@ -68,7 +69,6 @@ class TestCallNativeCppClass
             int colIdx = 0;
             for (int i = 0; i < size; i++)
             {
-                //ret.Date[i] = *p;
                 Date[i] = *p;
                 p = p + 1;
                 colIdx = colIdx + 1;
@@ -111,5 +111,31 @@ class TestCallNativeCppClass
         Debug.Assert(output.Height == 512);
         Debug.Assert(firstDataVal == 134);
         Console.WriteLine($"After UsingStruct, output image: width = {output.Width}, height = {output.Height}, Data[0] = {firstDataVal}");
+    }
+
+
+    [DllImport("../../NativeCppDll.dll", EntryPoint = "?UsingCommonTypeNotUsingExtrentC@@YAXHNMPEAHPEANPEAM@Z", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, out int output1, out double output2, out float output3);
+
+    public void TestUsingCommonTypeNotUsingExternCOutput()
+    {
+        Console.WriteLine("\n\n***** Test using common type not using extern C and receive output!");
+        // arrange
+        int arg1 = 1;
+        double arg2 = 2.0;
+        float arg3 = 3;
+        int output1 = 0;
+        double output2 = 0.0;
+        float output3 = 0;
+
+        // act
+        UsingCommonTypeNotUsingExtrentC(arg1, arg2, arg3, out output1, out output2, out output3);
+
+        // assert
+        Debug.Assert(output1 == 5);
+        Debug.Assert(output2 == 7.0);
+        Debug.Assert(output3 == 9);
+
+        Console.WriteLine($"output1 = {output1}, output2 = {output2}, output3 = {output3}");
     }
 }
