@@ -48,3 +48,36 @@ void UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* out
 	*output2 = arg2 + 5.0;
 	*output3 = arg3 + 6;
 }
+
+void TestThrowStdException()
+{
+	throw new std::exception("Test throw std::exception.");
+}
+
+void TestThrowStringException()
+{
+	throw "Test throw string exception";
+}
+
+class NativeException : public std::exception
+{
+public:
+	NativeException() {}
+
+	NativeException(std::string msg) : _message(msg) {}
+
+	~NativeException() {}
+
+	virtual const char* what() const throw()
+	{
+		return this->_message.c_str();
+	}
+
+private:
+	std::string _message = "In native c++ code occur any execution!";
+};
+
+void TestThrowCustomerException()
+{
+	throw new NativeException("Test throw exception with self defined exception class!");
+}

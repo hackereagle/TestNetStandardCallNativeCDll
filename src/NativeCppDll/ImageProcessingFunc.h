@@ -24,6 +24,10 @@ extern "C"
 	DLL_API void __cdecl UsingStruct(Image* inputImage, Image* outputImage, int arg1, double arg2);
 
 	DLL_API void __cdecl ReleaseImage(Image* inputImage);
+
+	DLL_API void __cdecl TestThrowStdException();
+	DLL_API void __cdecl TestThrowStringException();
+	DLL_API void __cdecl TestThrowCustomerException();
 }
 
 DLL_API void __cdecl UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3);

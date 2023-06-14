@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -10,6 +11,9 @@ var test = new TestCallNativeCppClass();
 test.TestUsingCommonTypeOutput();
 test.TestPassSeftDefineStruct();
 test.TestUsingCommonTypeNotUsingExternCOutput();
+test.TestNativeCppDllThrowStdException();
+test.TestNativeCppDllThrowStringException();
+test.TestNativeCppDllThrowCustomerException();
 Console.ReadLine();
 
 
@@ -137,5 +141,68 @@ class TestCallNativeCppClass
         Debug.Assert(output3 == 9);
 
         Console.WriteLine($"output1 = {output1}, output2 = {output2}, output3 = {output3}");
+    }
+
+    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    private static extern void TestThrowStdException();
+    public void TestNativeCppDllThrowStdException()
+    {
+        Console.WriteLine("\n\n***** Test catch cpp dll throw std::exception!");
+        try
+        {
+            TestThrowStdException();
+        }
+        catch (SEHException ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}, error code = {ex.ErrorCode}\nstack: {ex.StackTrace}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}\nstack: {ex.StackTrace}");
+        }
+    }
+
+    [DllImport("../../NativeCppDll.dll", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void TestThrowStringException();
+
+    public void TestNativeCppDllThrowStringException()
+    {
+        Console.WriteLine("\n\n***** Test catch cpp dll throw std::string exception!");
+        try
+        {
+            TestThrowStringException();
+        }
+        catch (SEHException ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}, error code = {ex.ErrorCode}\nstack: {ex.StackTrace}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}\nstack: {ex.StackTrace}");
+        }
+    }
+
+    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+    private static extern void TestThrowCustomerException();
+
+    public void TestNativeCppDllThrowCustomerException()
+    {
+        Console.WriteLine("\n\n***** Test catch cpp dll throw std::NativeException!");
+        try
+        {
+            TestThrowCustomerException();
+        }
+        catch (SEHException ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}, error code = {ex.ErrorCode}\nstack: {ex.StackTrace}");
+        }
+        catch (Win32Exception ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}\nstack: {ex.StackTrace}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}\nstack: {ex.StackTrace}");
+        }
     }
 }
