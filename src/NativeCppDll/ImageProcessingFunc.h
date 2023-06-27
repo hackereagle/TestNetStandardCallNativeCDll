@@ -8,6 +8,7 @@
 // #define DLL_API extern "C" _declspec(dllexport) 
 #define DLL_API _declspec(dllexport) 
 #else
+// #define DLL_API extern "C" _declspec(dllimport) 
 #define DLL_API _declspec(dllimport) 
 #endif // DLL_EXPORT
 
