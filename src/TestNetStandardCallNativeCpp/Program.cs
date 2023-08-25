@@ -14,6 +14,7 @@ test.TestUsingCommonTypeNotUsingExternCOutput();
 test.TestNativeCppDllThrowStdException();
 test.TestNativeCppDllThrowStringException();
 test.TestNativeCppDllThrowCustomerException();
+test.TestPassstructWithArr();
 Console.ReadLine();
 
 
@@ -201,5 +202,56 @@ class TestCallNativeCppClass
         {
             Console.WriteLine($"Catch {ex.GetType().Name}: {ex.Message}\nstack: {ex.StackTrace}");
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+	struct StructWithArr
+	{
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+		public int[] IParam;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+		public double[] DParam;
+	};
+    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+#if USE_STRUCT_INSTEAD_OF_INTPTR
+    private static extern void TestPassStructWithArr(ref StructWithArr obj);
+#else
+    private static extern void TestPassStructWithArr(IntPtr obj);
+#endif
+
+    public void TestPassstructWithArr()
+    {
+#if USE_STRUCT_INSTEAD_OF_INTPTR
+        StructWithArr st = new StructWithArr();
+        st.IParam = new int[10];
+        st.DParam = new double[10];
+
+        for (int i = 0; i < 10; i++)
+            st.IParam[i] = i;
+
+        for (int i = 0; i < 10; i++)
+            st.DParam[i] = Convert.ToDouble(i) + (Convert.ToDouble(i) * 0.1);
+
+        TestPassStructWithArr(ref st);
+        Console.WriteLine($"5-th element = {st.DParam[5]}");
+        Debug.Assert(st.DParam[5] == 100.2345);
+#else
+        // Due to a fact that struct have array and array is reference, so cannot only pin struct.
+        StructWithArr st = new StructWithArr();
+        st.IParam = new int[10];
+        st.DParam = new double[10];
+
+        for (int i = 0; i < 10; i++)
+            st.IParam[i] = i;
+
+        for (int i = 0; i < 10; i++)
+            st.DParam[i] = Convert.ToDouble(i) + (Convert.ToDouble(i) * 0.1);
+
+        GCHandle handle = GCHandle.Alloc(st, GCHandleType.Pinned);
+        IntPtr ptr = handle.AddrOfPinnedObject();
+        TestPassStructWithArr(ptr);
+        handle.Free();
+        Console.WriteLine($"5-th element = {st.DParam[5]}");
+#endif
     }
 }

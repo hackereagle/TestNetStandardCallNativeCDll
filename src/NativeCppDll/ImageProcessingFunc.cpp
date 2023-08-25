@@ -81,3 +81,18 @@ void TestThrowCustomerException()
 {
 	throw new NativeException("Test throw exception with self defined exception class!");
 }
+
+void TestPassStructWithArr(StructWithArr* obj)
+{
+	std::cout << "Show integer array:" << std::endl;
+	for (int i = 0; i < 10; i++)
+		std::cout << obj->IParam[i] << " ";
+	std::cout << std::endl;
+	
+	std::cout << "Show double array:" << std::endl;
+	for (int i = 0; i < 10; i++)
+		std::cout << obj->DParam[i] << " ";
+	std::cout << std::endl;
+
+	obj->DParam[5] = 100.2345;
+}
