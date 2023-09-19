@@ -96,3 +96,17 @@ void TestPassStructWithArr(StructWithArr* obj)
 
 	obj->DParam[5] = 100.2345;
 }
+
+Image* ReadImage(const char* path)
+{
+	Image* ret = nullptr;
+
+	cv::Mat img;
+	img = cv::imread(path, cv::IMREAD_GRAYSCALE);
+	if (!img.empty())
+		ret = ConvertCvMat2Image(img);
+	else
+		std::cout << "ERROR: read image \"" << path << "\" FAIL!" << std::endl;
+
+	return ret;
+}

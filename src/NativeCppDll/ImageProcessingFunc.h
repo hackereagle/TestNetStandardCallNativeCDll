@@ -42,6 +42,7 @@ extern "C"
 		}
 	}StructWithArr;
 	DLL_API void __cdecl TestPassStructWithArr(StructWithArr* obj);
+	DLL_API Image* __cdecl ReadImage(const char* path);
 }
 
 DLL_API void __cdecl UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3);

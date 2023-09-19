@@ -15,6 +15,7 @@ test.TestNativeCppDllThrowStdException();
 test.TestNativeCppDllThrowStringException();
 test.TestNativeCppDllThrowCustomerException();
 test.TestPassstructWithArr();
+test.TestReturnStruct();
 Console.ReadLine();
 
 
@@ -87,6 +88,43 @@ class TestCallNativeCppClass
             GCHandle pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
             this.Data = pinnedArray.AddrOfPinnedObject();
             pinnedArray.Free();
+        }
+
+        public Bitmap ToBitmap()
+        { 
+            Bitmap ret = new Bitmap(this.Width, this.Height, PixelFormat.Format8bppIndexed);
+
+            ColorPalette cp = ret.Palette;
+            for (int i = 0; i < 256; i++)
+                cp.Entries[i] = System.Drawing.Color.FromArgb(255, i, i, i);
+
+            BitmapData bd = ret.LockBits(new Rectangle(0, 0, ret.Width, ret.Height), ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed);
+            int stride = bd.Stride;
+            int skipByte = stride - bd.Width;
+            int size = ret.Width * ret.Height;
+            unsafe
+            {
+                byte* p = (byte*)bd.Scan0.ToPointer();
+                byte* thisImgPtr = (byte*)Data.ToPointer();
+                int colIdx = 0;
+                for (int i = 0; i < size; i++)
+                {
+                    *p = *thisImgPtr;
+                    p = p + 1;
+                    thisImgPtr = thisImgPtr + i;
+
+                    colIdx = colIdx + 1;
+                    if (colIdx == ret.Width - 1)
+                    { 
+                        p = p + skipByte;
+                        thisImgPtr = thisImgPtr + skipByte;
+                        colIdx = 0;
+                    }
+                }
+            }
+            ret.UnlockBits( bd );
+
+            return ret;
         }
     }
 
@@ -221,6 +259,7 @@ class TestCallNativeCppClass
 
     public void TestPassstructWithArr()
     {
+        Console.WriteLine("\n\n***** Test pass struct which have array member to cpp dll *****");
 #if USE_STRUCT_INSTEAD_OF_INTPTR
         StructWithArr st = new StructWithArr();
         st.IParam = new int[10];
@@ -253,5 +292,20 @@ class TestCallNativeCppClass
         handle.Free();
         Console.WriteLine($"5-th element = {st.DParam[5]}");
 #endif
+    }
+
+    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr ReadImage(string path);
+    public void TestReturnStruct()
+    { 
+        Console.WriteLine("\n\n***** Test Return Struct Native Cpp Function *****");
+
+        string path = AppDomain.CurrentDomain.BaseDirectory + "../../../Images/lena_gray.bmp";
+        IntPtr img = ReadImage(path);
+        ImageStruct managedImg = (ImageStruct)Marshal.PtrToStructure(img, typeof(ImageStruct))!;
+        Debug.Assert(managedImg.Width == 512);
+        Console.WriteLine($"Width = {managedImg.Width}");
+        Debug.Assert(managedImg.Height == 512);
+        Console.WriteLine($"Width = {managedImg.Height}");
     }
 }
