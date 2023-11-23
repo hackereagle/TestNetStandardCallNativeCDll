@@ -111,13 +111,12 @@ class TestCallNativeCppClass
                 {
                     *p = *thisImgPtr;
                     p = p + 1;
-                    thisImgPtr = thisImgPtr + i;
+                    thisImgPtr = thisImgPtr + 1;
 
                     colIdx = colIdx + 1;
                     if (colIdx == ret.Width - 1)
                     { 
                         p = p + skipByte;
-                        thisImgPtr = thisImgPtr + skipByte;
                         colIdx = 0;
                     }
                 }
@@ -306,6 +305,13 @@ class TestCallNativeCppClass
         Debug.Assert(managedImg.Width == 512);
         Console.WriteLine($"Width = {managedImg.Width}");
         Debug.Assert(managedImg.Height == 512);
-        Console.WriteLine($"Width = {managedImg.Height}");
+        Console.WriteLine($"Height = {managedImg.Height}");
+
+        Bitmap bm = managedImg.ToBitmap();
+        Debug.Assert(managedImg.Width == 512);
+        Console.WriteLine($"Bitmap Width = {bm.Width}");
+        Debug.Assert(managedImg.Height == 512);
+        Console.WriteLine($"Bitmap Height = {bm.Height}");
+
     }
 }
