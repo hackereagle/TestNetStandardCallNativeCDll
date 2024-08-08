@@ -57,6 +57,7 @@ class TestCallNativeCppClass
         public int Height;
         public IntPtr Data;
 
+        GCHandle _pinnedArray;
         public ImageStruct(Bitmap bm)
         { 
             this.Width = bm.Width;
@@ -85,9 +86,12 @@ class TestCallNativeCppClass
             }
             bm.UnlockBits( bd );
 
-            GCHandle pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
-            this.Data = pinnedArray.AddrOfPinnedObject();
-            pinnedArray.Free();
+            //GCHandle pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
+            //this.Data = pinnedArray.AddrOfPinnedObject();
+            //pinnedArray.Free();
+            _pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
+            this.Data = _pinnedArray.AddrOfPinnedObject();
+            _pinnedArray.Free();
         }
 
         public Bitmap ToBitmap()
@@ -125,6 +129,12 @@ class TestCallNativeCppClass
 
             return ret;
         }
+
+        public void Release()
+        { 
+            if (_pinnedArray.IsAllocated)
+                _pinnedArray.Free();
+        }
     }
 
     [DllImport("../../NativeCppDll.dll", EntryPoint = "UsingStruct", CallingConvention = CallingConvention.Cdecl)]
@@ -150,6 +160,7 @@ class TestCallNativeCppClass
         Debug.Assert(output.Height == 512);
         Debug.Assert(firstDataVal == 134);
         Console.WriteLine($"After UsingStruct, output image: width = {output.Width}, height = {output.Height}, Data[0] = {firstDataVal}");
+        input.Release();
     }
 
 
@@ -294,7 +305,7 @@ class TestCallNativeCppClass
     }
 
     [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr ReadImage(string path);
+    private static extern IntPtr ReadImage([MarshalAs(UnmanagedType.LPStr)]string path);
     public void TestReturnStruct()
     { 
         Console.WriteLine("\n\n***** Test Return Struct Native Cpp Function *****");
