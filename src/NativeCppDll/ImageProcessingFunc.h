@@ -20,6 +20,8 @@ extern "C"
 	{
 		int Width = 0;
 		int Height = 0;
+		//int Depth = 0; // 1:8bit, 2:16bit
+		int Channel = 0;
 		unsigned char* Data = nullptr;
 	}Image;
 	DLL_API void __cdecl UsingStruct(Image* inputImage, Image* outputImage, int arg1, double arg2);
@@ -52,14 +54,15 @@ inline Image* ConvertCvMat2Image(cv::Mat mat)
 	Image* ret = new Image();
 	ret->Height = mat.rows;
 	ret->Width = mat.cols;
-	ret->Data = new unsigned char[ret->Height * ret->Width];
+	ret->Channel = mat.channels();
+	ret->Data = new unsigned char[ret->Height * ret->Width * ret->Channel];
 
 	if (mat.data == nullptr)
 		throw "In ConvertCvMat2Image, input cv::Mat::data is null";
 	if (ret->Data == nullptr)
 		throw "In ConvertCvMat2Image, output Image::Data allocation fail";
 
-	memcpy(ret->Data, mat.data, ret->Height * ret->Width);
+	memcpy(ret->Data, mat.data, ret->Height * ret->Width * ret->Channel);
 
 	return ret;
 }
@@ -68,12 +71,13 @@ inline void CopyMat2Image(cv::Mat mat, Image* image)
 {
 	image->Height = mat.rows;
 	image->Width = mat.cols;
-	image->Data = new unsigned char[image->Height * image->Width];
+	image->Channel = mat.channels();
+	image->Data = new unsigned char[image->Height * image->Width * image->Channel];
 
 	if (mat.data == nullptr)
 		throw "In ConvertCvMat2Image, input cv::Mat::data is null";
 	if (image->Data == nullptr)
 		throw "In ConvertCvMat2Image, output Image::Data allocation fail";
 
-	memcpy(image->Data, mat.data, image->Height * image->Width);
+	memcpy(image->Data, mat.data, image->Height * image->Width * image->Channel);
 }

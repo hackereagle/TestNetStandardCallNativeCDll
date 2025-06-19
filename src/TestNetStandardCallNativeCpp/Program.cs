@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using TestNetStandardCallNativeCpp;
 
 Console.WriteLine("Beging testing .NET Standard using native c++ dll.");
 var test = new TestCallNativeCppClass();
@@ -50,92 +51,6 @@ class TestCallNativeCppClass
         Console.WriteLine($"output1 = {output1}, output2 = {output2}, output3 = {output3}");
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    struct ImageStruct
-    {
-        public int Width;
-        public int Height;
-        public IntPtr Data;
-
-        GCHandle _pinnedArray;
-        public ImageStruct(Bitmap bm)
-        { 
-            this.Width = bm.Width;
-            this.Height = bm.Height;
-            byte[] Date = new byte[bm.Width * bm.Height];
-
-            BitmapData bd = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed);
-            int stride = bd.Stride;
-            int skipByte = stride - bd.Width;
-            int size = bm.Width * bm.Height;
-            unsafe
-            {
-                byte* p = (byte*)bd.Scan0.ToPointer();
-                int colIdx = 0;
-                for (int i = 0; i < size; i++)
-                {
-                    Date[i] = *p;
-                    p = p + 1;
-                    colIdx = colIdx + 1;
-                    if (colIdx == bm.Width - 1)
-                    { 
-                        p = p + skipByte;
-                        colIdx = 0;
-                    }
-                }
-            }
-            bm.UnlockBits( bd );
-
-            //GCHandle pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
-            //this.Data = pinnedArray.AddrOfPinnedObject();
-            //pinnedArray.Free();
-            _pinnedArray = GCHandle.Alloc( Date, GCHandleType.Pinned);
-            this.Data = _pinnedArray.AddrOfPinnedObject();
-            _pinnedArray.Free();
-        }
-
-        public Bitmap ToBitmap()
-        { 
-            Bitmap ret = new Bitmap(this.Width, this.Height, PixelFormat.Format8bppIndexed);
-
-            ColorPalette cp = ret.Palette;
-            for (int i = 0; i < 256; i++)
-                cp.Entries[i] = System.Drawing.Color.FromArgb(255, i, i, i);
-
-            BitmapData bd = ret.LockBits(new Rectangle(0, 0, ret.Width, ret.Height), ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed);
-            int stride = bd.Stride;
-            int skipByte = stride - bd.Width;
-            int size = ret.Width * ret.Height;
-            unsafe
-            {
-                byte* p = (byte*)bd.Scan0.ToPointer();
-                byte* thisImgPtr = (byte*)Data.ToPointer();
-                int colIdx = 0;
-                for (int i = 0; i < size; i++)
-                {
-                    *p = *thisImgPtr;
-                    p = p + 1;
-                    thisImgPtr = thisImgPtr + 1;
-
-                    colIdx = colIdx + 1;
-                    if (colIdx == ret.Width - 1)
-                    { 
-                        p = p + skipByte;
-                        colIdx = 0;
-                    }
-                }
-            }
-            ret.UnlockBits( bd );
-
-            return ret;
-        }
-
-        public void Release()
-        { 
-            if (_pinnedArray.IsAllocated)
-                _pinnedArray.Free();
-        }
-    }
 
     [DllImport("../../NativeCppDll.dll", EntryPoint = "UsingStruct", CallingConvention = CallingConvention.Cdecl)]
     private static extern void UsingStruct(ImageStruct inputImage, ref ImageStruct outputImage, int arg1, double arg2);
@@ -252,14 +167,6 @@ class TestCallNativeCppClass
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-	struct StructWithArr
-	{
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-		public int[] IParam;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-		public double[] DParam;
-	};
     [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
 #if USE_STRUCT_INSTEAD_OF_INTPTR
     private static extern void TestPassStructWithArr(ref StructWithArr obj);
