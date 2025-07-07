@@ -34,10 +34,13 @@ void UsingStruct(Image* inputImage, Image* outputImage, int arg1, double arg2)
 
 void ReleaseImage(Image* inputImage)
 {
-	inputImage->Height = 0;
-	inputImage->Width = 0;
-	delete [] inputImage->Data;
-	inputImage->Data = nullptr;
+	if (inputImage->Data != nullptr)
+	{
+		inputImage->Height = 0;
+		inputImage->Width = 0;
+		delete [] inputImage->Data;
+		inputImage->Data = nullptr;
+	}
 }
 
 void UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3)

@@ -15,18 +15,19 @@ test.TestUsingCommonTypeNotUsingExternCOutput();
 test.TestNativeCppDllThrowStdException();
 test.TestNativeCppDllThrowStringException();
 test.TestNativeCppDllThrowCustomerException();
-test.TestPassstructWithArr();
+test.TestPassStructWithArr();
 test.TestReturnStruct();
 Console.ReadLine();
 
 
 class TestCallNativeCppClass
 {
+    private const string DLL_PATH = "../../NativeCppDll.dll";
     public TestCallNativeCppClass()
     { 
     }
 
-    [DllImport("../../NativeCppDll.dll", EntryPoint = "UsingCommonType", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, EntryPoint = "UsingCommonType", CallingConvention = CallingConvention.Cdecl)]
     private static extern void UsingCommonType(int arg1, double arg2, float arg3, out int output1, out double output2, out float output3);
 
     public void TestUsingCommonTypeOutput()
@@ -52,7 +53,7 @@ class TestCallNativeCppClass
     }
 
 
-    [DllImport("../../NativeCppDll.dll", EntryPoint = "UsingStruct", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, EntryPoint = "UsingStruct", CallingConvention = CallingConvention.Cdecl)]
     private static extern void UsingStruct(ImageStruct inputImage, ref ImageStruct outputImage, int arg1, double arg2);
 
     public void TestPassSeftDefineStruct()
@@ -79,7 +80,7 @@ class TestCallNativeCppClass
     }
 
 
-    [DllImport("../../NativeCppDll.dll", EntryPoint = "?UsingCommonTypeNotUsingExtrentC@@YAXHNMPEAHPEANPEAM@Z", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, EntryPoint = "?UsingCommonTypeNotUsingExtrentC@@YAXHNMPEAHPEANPEAM@Z", CallingConvention = CallingConvention.Cdecl)]
     private static extern void UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, out int output1, out double output2, out float output3);
 
     public void TestUsingCommonTypeNotUsingExternCOutput()
@@ -104,7 +105,7 @@ class TestCallNativeCppClass
         Console.WriteLine($"output1 = {output1}, output2 = {output2}, output3 = {output3}");
     }
 
-    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
     private static extern void TestThrowStdException();
     public void TestNativeCppDllThrowStdException()
     {
@@ -123,7 +124,7 @@ class TestCallNativeCppClass
         }
     }
 
-    [DllImport("../../NativeCppDll.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, CallingConvention = CallingConvention.Cdecl)]
     private static extern void TestThrowStringException();
 
     public void TestNativeCppDllThrowStringException()
@@ -143,7 +144,7 @@ class TestCallNativeCppClass
         }
     }
 
-    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
     private static extern void TestThrowCustomerException();
 
     public void TestNativeCppDllThrowCustomerException()
@@ -167,14 +168,14 @@ class TestCallNativeCppClass
         }
     }
 
-    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
 #if USE_STRUCT_INSTEAD_OF_INTPTR
     private static extern void TestPassStructWithArr(ref StructWithArr obj);
 #else
     private static extern void TestPassStructWithArr(IntPtr obj);
 #endif
 
-    public void TestPassstructWithArr()
+    public void TestPassStructWithArr()
     {
         Console.WriteLine("\n\n***** Test pass struct which have array member to cpp dll *****");
 #if USE_STRUCT_INSTEAD_OF_INTPTR
@@ -211,8 +212,11 @@ class TestCallNativeCppClass
 #endif
     }
 
-    [DllImport("../../NativeCppDll.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_PATH, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr ReadImage([MarshalAs(UnmanagedType.LPStr)]string path);
+
+    [DllImport(DLL_PATH, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    private static extern void ReleaseImage(IntPtr img);
     public void TestReturnStruct()
     { 
         Console.WriteLine("\n\n***** Test Return Struct Native Cpp Function *****");
@@ -231,5 +235,7 @@ class TestCallNativeCppClass
         Debug.Assert(managedImg.Height == 512);
         Console.WriteLine($"Bitmap Height = {bm.Height}");
 
+        // Rlease resource
+        ReleaseImage(img);
     }
 }
