@@ -17,6 +17,29 @@ test.TestNativeCppDllThrowStringException();
 test.TestNativeCppDllThrowCustomerException();
 test.TestPassStructWithArr();
 test.TestReturnStruct();
+#if PRESSURE_TEST
+test.TestResultStructHaveFixedSizeArray();
+//for (int i = 0; i < 1000; i++)
+//{ 
+//    test.TestResultStructHaveFixedSizeArray();
+//    //Console.Read();
+//    Thread.Sleep(1000);
+//}
+Console.WriteLine("Finished struct having fixed size array pressure testing");
+#else
+test.TestResultStructHaveFixedSizeArray();
+#endif //PRESSURE_TEST
+#if PRESSURE_TEST
+for (int i = 0; i < 1000; i++)
+{ 
+    test.TestReturnStructDynamicArray();
+    //Console.Read();
+    Thread.Sleep(1000);
+}
+Console.WriteLine("Finished struct having dynamic size array pressure testing");
+#else
+test.TestReturnStructDynamicArray();
+#endif //PRESSURE_TEST
 Console.ReadLine();
 
 
@@ -237,5 +260,60 @@ class TestCallNativeCppClass
 
         // Rlease resource
         ReleaseImage(img);
+    }
+
+    [DllImport(DLL_PATH, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    private static extern int TestSetOutputToFixeArrayStruct(int arg1, double arg2, float arg3, IntPtr output);
+
+    public void TestResultStructHaveFixedSizeArray()
+    {
+        Console.WriteLine("\n\n***** Test Result Struct Have Fixed Size Array *****");
+
+        MyResult result = new MyResult();
+        GCHandle handle = GCHandle.Alloc(result, GCHandleType.Pinned);
+        IntPtr ptr = handle.AddrOfPinnedObject();
+        TestSetOutputToFixeArrayStruct(10, 22.0, 330.0f, ptr);
+
+        //result = (MyResult)Marshal.PtrToStructure(ptr, typeof(MyResult))!; // This is not necessary, because we use GCHandle to pin the struct. And this seems to cause a memory leak.
+        result = (MyResult)handle.Target!;
+
+        MyPoint point = result.GetPoint(0);
+        Debug.Assert(point.X == 10 + 100);
+        Debug.Assert(point.Y == 10 + 200);
+        point = result.GetPoint(2500);
+        Debug.Assert(point.X == 22 + 100);
+        Debug.Assert(point.Y == 22 + 100);
+        point = result.GetPoint(4999);
+        Debug.Assert(point.X == 330 + 100);
+        Debug.Assert(point.Y == 330 + 200);
+
+        result.Release();
+        handle.Free();
+    }
+
+    [DllImport(DLL_PATH, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+	private static extern IntPtr TestReturnStructDynamicArray(int arg1, double arg2, float arg3);
+
+    [DllImport(DLL_PATH, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+	private static extern void ReleaseMyResult2(IntPtr result);
+
+    public void TestReturnStructDynamicArray()
+    {
+        Console.WriteLine("\n\n***** Test Return Struct Dynamic Array *****");
+        IntPtr ptr = TestReturnStructDynamicArray(10, 22.0, 330.0f);
+        MyResult2 result = (MyResult2)Marshal.PtrToStructure(ptr, typeof(MyResult2))!;
+        Console.WriteLine($"Count = {result.Count}");
+
+        //MyPoint point = result.GetPoint(0);
+        //Debug.Assert(point.X == 10 + 100);
+        //Debug.Assert(point.Y == 10 + 200);
+        //point = result.GetPoint(2);
+        //Debug.Assert(point.X == 22 + 100);
+        //Debug.Assert(point.Y == 22 + 200);
+        //point = result.GetPoint(result.Count - 1);
+        //Debug.Assert(point.X == 330 + 100);
+        //Debug.Assert(point.Y == 330 + 200);
+        // Rlease resource
+        ReleaseMyResult2(ptr);
     }
 }

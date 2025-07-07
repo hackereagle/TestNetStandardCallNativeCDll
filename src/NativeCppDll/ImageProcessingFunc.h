@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include "opencv2/opencv.hpp"
+#include <random>
 
 #ifdef DLL_EXPORT
 // #define DLL_API extern "C" _declspec(dllexport) 
@@ -45,6 +46,31 @@ extern "C"
 	}StructWithArr;
 	DLL_API void __cdecl TestPassStructWithArr(StructWithArr* obj);
 	DLL_API Image* __cdecl ReadImage(const char* path);
+
+	typedef struct _myPoint
+	{
+		double X = 0.0;
+		double Y = 0.0;
+	}MyPoint;
+
+	typedef struct _myResult
+	{
+		int ErrorCode = -999;
+		int Count = -1;
+		//MyPoint Results[5000];
+		MyPoint* Results = nullptr;
+	}MyResult;
+
+	typedef struct _myResult2
+	{
+		int ErrorCode = -999;
+		int Count = -1;
+		MyPoint* Results = nullptr;
+	}MyResult2;
+
+	DLL_API int __cdecl TestSetOutputToFixeArrayStruct(int arg1, double arg2, float arg3, MyResult* output);
+	DLL_API MyResult2* __cdecl TestReturnStructDynamicArray(int arg1, double arg2, float arg3);
+	DLL_API void __cdecl ReleaseMyResult2(MyResult2* result);
 }
 
 DLL_API void __cdecl UsingCommonTypeNotUsingExtrentC(int arg1, double arg2, float arg3, int* output1, double* output2, float* output3);
@@ -80,4 +106,12 @@ inline void CopyMat2Image(cv::Mat mat, Image* image)
 		throw "In ConvertCvMat2Image, output Image::Data allocation fail";
 
 	memcpy(image->Data, mat.data, image->Height * image->Width * image->Channel);
+}
+
+inline int GenerateIntInRange(int rangeMin, int rangeMax)
+{
+	std::random_device rd; 
+	std::default_random_engine gen(rd());
+	std::uniform_int_distribution<int> dis(rangeMin, rangeMax);
+	return dis(gen);
 }

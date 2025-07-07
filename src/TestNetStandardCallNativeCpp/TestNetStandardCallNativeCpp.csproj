@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);USE_STRUCT_INSTEAD_OF_INTPTR</DefineConstants>
+    <DefineConstants>$(DefineConstants);PRESSURE_TEST;USE_STRUCT_INSTEAD_OF_INTPTR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

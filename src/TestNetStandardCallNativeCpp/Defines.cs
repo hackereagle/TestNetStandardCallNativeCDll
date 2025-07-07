@@ -196,4 +196,87 @@ namespace TestNetStandardCallNativeCpp
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
 		public double[] DParam;
 	};
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct  MyPoint
+    {
+        public MyPoint(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public double X = 0.0;
+        public double Y = 0.0;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct  MyResult
+    {
+        public MyResult(int errorCode)
+        { 
+            ErrorCode = errorCode;
+            Count = 5000;
+            //Results = new MyPoint[Count];
+            int sizeOfPoint = Marshal.SizeOf(typeof(MyPoint));
+            Results = Marshal.AllocHGlobal(sizeOfPoint * Count);
+        }
+
+        public MyResult() : this(0)
+        { 
+        }
+
+        public int ErrorCode;
+        public int Count;
+        //[MarshalAs(UnmanagedType.LPArray, SizeConst = 5000)]
+        //public MyPoint[] Results;
+        public IntPtr Results;
+
+        public MyPoint GetPoint(int index)
+        {
+            if (index < 0 || index >= Count)
+                throw new IndexOutOfRangeException($"Index {index} is out of range!");
+            int sizeOfPoint = Marshal.SizeOf(typeof(MyPoint));
+            IntPtr pointPtr = IntPtr.Add(Results, sizeOfPoint * index);
+            return Marshal.PtrToStructure<MyPoint>(pointPtr);
+        }
+
+        public void Release()
+        {
+            if (Results != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(Results);
+                Results = IntPtr.Zero;
+                Count = 0;
+                ErrorCode = -999;
+            }
+        }
+    }
+
+    public struct MyResult2
+    {
+        public MyResult2() : this(0)
+        { 
+        }
+
+        public MyResult2(int errorCode)
+        {
+            ErrorCode = errorCode;
+            Count = 0;
+            Results = IntPtr.Zero;
+        }
+
+        public int ErrorCode;
+        public int Count;
+        public IntPtr Results;
+
+        public MyPoint GetPoint(int index)
+        {
+            if (index < 0 || index >= Count)
+                throw new IndexOutOfRangeException($"Index {index} is out of range!");
+            int sizeOfPoint = Marshal.SizeOf(typeof(MyPoint));
+            IntPtr pointPtr = IntPtr.Add(Results, sizeOfPoint * index);
+            return Marshal.PtrToStructure<MyPoint>(pointPtr);
+        }
+    }
 }
