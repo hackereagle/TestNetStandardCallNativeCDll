@@ -17,29 +17,24 @@ test.TestNativeCppDllThrowStringException();
 test.TestNativeCppDllThrowCustomerException();
 test.TestPassStructWithArr();
 test.TestReturnStruct();
-#if PRESSURE_TEST
-test.TestResultStructHaveFixedSizeArray();
-//for (int i = 0; i < 1000; i++)
-//{ 
-//    test.TestResultStructHaveFixedSizeArray();
-//    //Console.Read();
-//    Thread.Sleep(1000);
-//}
-Console.WriteLine("Finished struct having fixed size array pressure testing");
-#else
-test.TestResultStructHaveFixedSizeArray();
-#endif //PRESSURE_TEST
-#if PRESSURE_TEST
-for (int i = 0; i < 1000; i++)
-{ 
-    test.TestReturnStructDynamicArray();
+//test.TestResultStructHaveFixedSizeArray();
+for (int i = 0; i < 10000; i++)
+{
+    test.TestResultStructHaveFixedSizeArray();
     //Console.Read();
     Thread.Sleep(1000);
 }
-Console.WriteLine("Finished struct having dynamic size array pressure testing");
-#else
+Console.WriteLine("Finished struct having fixed size array pressure testing");
+
 test.TestReturnStructDynamicArray();
-#endif //PRESSURE_TEST
+//for (int i = 0; i < 3000; i++)
+//{
+//    test.TestReturnStructDynamicArray();
+//    //Console.Read();
+//    Thread.Sleep(1000);
+//}
+Console.WriteLine("Finished struct having dynamic size array pressure testing");
+
 Console.ReadLine();
 
 
@@ -304,15 +299,15 @@ class TestCallNativeCppClass
         MyResult2 result = (MyResult2)Marshal.PtrToStructure(ptr, typeof(MyResult2))!;
         Console.WriteLine($"Count = {result.Count}");
 
-        //MyPoint point = result.GetPoint(0);
-        //Debug.Assert(point.X == 10 + 100);
-        //Debug.Assert(point.Y == 10 + 200);
-        //point = result.GetPoint(2);
-        //Debug.Assert(point.X == 22 + 100);
-        //Debug.Assert(point.Y == 22 + 200);
-        //point = result.GetPoint(result.Count - 1);
-        //Debug.Assert(point.X == 330 + 100);
-        //Debug.Assert(point.Y == 330 + 200);
+        MyPoint point = result.GetPoint(0);
+        Debug.Assert(point.X == 10 + 100);
+        Debug.Assert(point.Y == 10 + 200);
+        point = result.GetPoint(2);
+        Debug.Assert(point.X == 22 + 100);
+        Debug.Assert(point.Y == 22 + 200);
+        point = result.GetPoint(result.Count - 1);
+        Debug.Assert(point.X == 330 + 100);
+        Debug.Assert(point.Y == 330 + 200);
         // Rlease resource
         ReleaseMyResult2(ptr);
     }

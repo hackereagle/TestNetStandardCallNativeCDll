@@ -134,7 +134,7 @@ MyResult2* TestReturnStructDynamicArray(int arg1, double arg2, float arg3)
 {
 	MyResult2* result = new MyResult2;
 	result->ErrorCode = 0;
-	result->Count = GenerateIntInRange(3, 5000);
+	result->Count = GenerateIntInRange(5, 5000);
 	result->Results = new MyPoint[result->Count];
 	(result->Results)->X = (double)arg1 + 100.0;
 	(result->Results)->Y = (double)arg1 + 200.0;
